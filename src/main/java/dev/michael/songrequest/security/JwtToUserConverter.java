@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 
 @Component
-public class JwtToUserConverter implements Converter<Jwt, UsernamePasswordAuthenticationToken> {
+public class JwtToUserConverter implements Converter<Jwt , UsernamePasswordAuthenticationToken> {
 
     @Override
     public UsernamePasswordAuthenticationToken convert(Jwt jwt) {
