@@ -32,7 +32,11 @@ public class UserManager implements UserDetailsManager {
 
     @Override
     public void deleteUser(String username) {
-        //TODO
+        userRepository.deleteByUsername(username);
+    }
+
+    public void deleteUserById(String id) {
+        userRepository.deleteById(id);
     }
 
     @Override

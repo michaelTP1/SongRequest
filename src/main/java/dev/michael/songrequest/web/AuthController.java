@@ -7,6 +7,7 @@ import dev.michael.songrequest.dto.TokenDTO;
 import dev.michael.songrequest.security.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -38,6 +39,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<TokenDTO> register(@RequestBody SignupDTO signupDTO) {
         User user = new User(signupDTO.getUsername(), signupDTO.getPassword());
+
+        if(userDetailsManager.userExists(user.getUsername())){
+            throw new DataIntegrityViolationException("El usuario ya existe en el sistema. Por favor, intente con otro nombre de usuario o correo electrónico.");
+        }
         userDetailsManager.createUser(user);
 
         Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(user, signupDTO.getPassword(), Collections.EMPTY_LIST);
@@ -48,16 +53,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@RequestBody LoginDTO loginDTO) {
         Authentication authentication = daoAuthenticationProvider.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(loginDTO.getUsername(), loginDTO.getPassword()));
-
         return ResponseEntity.ok(tokenGenerator.createToken(authentication));
     }
 
     @PostMapping("/token")
     public ResponseEntity<TokenDTO> token(@RequestBody TokenDTO tokenDTO) {
         Authentication authentication = refreshTokenAuthProvider.authenticate(new BearerTokenAuthenticationToken(tokenDTO.getRefreshToken()));
-        Jwt jwt = (Jwt) authentication.getCredentials();
-        // check if present in db and not revoked, etc
-
         return ResponseEntity.ok(tokenGenerator.createToken(authentication));
     }
 }
